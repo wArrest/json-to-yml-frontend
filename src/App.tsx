@@ -4,6 +4,7 @@ import "ace-builds/src-noconflict/mode-json";
 import "ace-builds/src-noconflict/mode-yaml";
 import "ace-builds/src-noconflict/theme-monokai";
 import "./App.css"
+import {Result} from "./index";
 
 interface IProps {
 }
@@ -11,6 +12,7 @@ interface IProps {
 interface IState {
   jsonContent: string
   yamlContent: string
+  formatIsError: boolean
 }
 
 class App extends React.PureComponent<IProps, IState> {
@@ -21,17 +23,17 @@ class App extends React.PureComponent<IProps, IState> {
     super(props)
     this.state = {
       jsonContent: '',
-      yamlContent: ''
+      yamlContent: '',
+      formatIsError: false
     }
   }
 
 
   //TODO 两个方法需要封装成一个，事件传参写不来了，卧槽
   //TODO 还需添加语法报错需要的样式
-  async onJsonChange(newValue: any) {
-
+  async getConvertedText(text: string): Promise<any> {
     const params = new URLSearchParams();
-    params.append('text', newValue);
+    params.append('text', text);
     const res = await fetch(this.baseUrl, {
       method: "post",
       body: params
@@ -39,21 +41,17 @@ class App extends React.PureComponent<IProps, IState> {
       r.json()
     ))
 
-    this.setState({...this.state, yamlContent: res.text, jsonContent: newValue})
+    return res
+  }
 
+  async onJsonChange(newValue: any) {
+    const result: Result = await this.getConvertedText(newValue)
+    this.setState({...this.state, yamlContent: result.text, jsonContent: newValue})
   }
 
   async onYamlChange(newValue: any) {
-    const params = new URLSearchParams();
-    params.append('text', newValue);
-    const res = await fetch(this.baseUrl, {
-      method: "post",
-      body: params
-    }).then((r) => (
-      r.json()
-    ))
-    this.setState({...this.state, yamlContent: newValue, jsonContent: res.text})
-
+    const result: Result = await this.getConvertedText(newValue)
+    this.setState({...this.state, yamlContent: newValue, jsonContent: result.text})
   }
 
   render() {
