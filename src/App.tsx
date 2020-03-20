@@ -96,7 +96,7 @@ class App extends React.PureComponent<IProps, IState> {
           <br/>
           <h2>JSON和YML在线转换</h2>
           <br/>
-          <p>无聊的在线小项目，源码可参考 <a href="https://github.com/wArrest/json-to-yml-frontend">github地址</a></p>
+          <p>无聊的在线小项目，源码可参考 <a href="https://github.com/wArrest/json-to-yml-frontend" target="_blank">github库</a></p>
 
           <h3>YAML:</h3>
           <p>YAML (YAML Ain't a Markup
