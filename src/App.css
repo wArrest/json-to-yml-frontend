@@ -31,6 +31,7 @@
     padding: 10px;
 }
 
+
 #json-editor-input{
     width: 100% !important;
     height: 98% !important;
@@ -45,5 +46,10 @@
     flex: 1;
     background: #555;
     padding: 10px;
+}
+
+.yml-editor h2 span ,  .json-editor h2 span {
+    font-size: 13px;
+    color: darkred;
 }
 

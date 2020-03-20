@@ -11,8 +11,9 @@ interface IProps {
 
 interface IState {
   jsonContent: string
+  jsonParseError: string
   yamlContent: string
-  formatIsError: boolean
+  yamlParseError: string
 }
 
 class App extends React.PureComponent<IProps, IState> {
@@ -23,8 +24,9 @@ class App extends React.PureComponent<IProps, IState> {
     super(props)
     this.state = {
       jsonContent: '',
+      jsonParseError: '',
       yamlContent: '',
-      formatIsError: false
+      yamlParseError: ''
     }
   }
 
@@ -44,14 +46,47 @@ class App extends React.PureComponent<IProps, IState> {
     return res
   }
 
+  //格式化json字符串
+  getFormatJson(json: string) {
+    let jsonObj
+    try {
+      jsonObj = JSON.parse(json)
+      let jsonString = JSON.stringify(jsonObj, null, "\t")
+      return jsonString
+    } catch (e) {
+      throw e
+    }
+  }
+
   async onJsonChange(newValue: any) {
+    if (newValue.length === 0) {
+      this.setState({...this.state, jsonContent: '', yamlContent: '', jsonParseError: ''})
+      return
+    }
     const result: Result = await this.getConvertedText(newValue)
-    this.setState({...this.state, yamlContent: result.text, jsonContent: newValue})
+    try {
+      let json = this.getFormatJson(newValue)
+      this.setState({...this.state, jsonParseError: ''})
+      this.setState({...this.state, yamlContent: result.text, jsonContent: json})
+    } catch (e) {
+      this.setState({...this.state, jsonContent: newValue})
+      this.setState({...this.state, jsonParseError: e.toString()})
+    }
   }
 
   async onYamlChange(newValue: any) {
+    if (newValue.length === 0) {
+      this.setState({...this.state, jsonContent: '', yamlContent: ''})
+      return
+    }
     const result: Result = await this.getConvertedText(newValue)
-    this.setState({...this.state, yamlContent: newValue, jsonContent: result.text})
+    try {
+      let json = this.getFormatJson(result.text)
+      this.setState({...this.state, jsonParseError: ''})
+      this.setState({...this.state, yamlContent: newValue, jsonContent: json})
+    } catch (e) {
+      this.setState({...this.state, yamlContent: newValue})
+    }
   }
 
   render() {
@@ -73,7 +108,7 @@ class App extends React.PureComponent<IProps, IState> {
             JSON采用完全独立于语言的文本格式，但是也使用了类似于C语言家族的习惯（包括C, C++, C#, Java, JavaScript, Perl, Python等）。 这些特性使JSON成为理想的数据交换语言。
           </p>
         </div>
-        <div className="json-editor"><h2>JSON</h2>
+        <div className="json-editor"><h2>JSON <span>{this.state.jsonParseError}</span></h2>
           <AceEditor
             placeholder="输入json文本"
             mode="json"
@@ -94,7 +129,7 @@ class App extends React.PureComponent<IProps, IState> {
             }}/>
 
         </div>
-        <div className="yml-editor"><h2>YAML</h2>
+        <div className="yml-editor"><h2>YAML <span>{this.state.yamlParseError}</span></h2>
           <AceEditor
             placeholder="输入yaml文本"
             mode="yaml"
