@@ -42,7 +42,7 @@ docker build . -t  json2yml-front:1.0
 docker run -it -p 8088:80 json2yml-front:1.0
 ```
 ## 已知Bug
-- [x] 输入太快会闪，需要加延时转换
+- [ ] 输入太快会闪，需要加延时转换
 - [x] 语法报错样式未加
 - [x] 输入yml,转成的json没有进行格式化
 - [ ] 转换函数应该传递文本类型的参数
