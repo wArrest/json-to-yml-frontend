@@ -5,6 +5,8 @@ import "ace-builds/src-noconflict/mode-yaml";
 import "ace-builds/src-noconflict/theme-monokai";
 import "./App.css"
 import {Result} from "./index";
+import { URL, Request } from './utlis/request';
+import { WebSocketTest } from './utlis/util';
 
 interface IProps {
 }
@@ -14,6 +16,7 @@ interface IState {
   jsonParseError: string
   yamlContent: string
   yamlParseError: string
+  yamlList: Array<object>
 }
 
 class App extends React.PureComponent<IProps, IState> {
@@ -26,8 +29,26 @@ class App extends React.PureComponent<IProps, IState> {
       jsonContent: '',
       jsonParseError: '',
       yamlContent: '',
-      yamlParseError: ''
-    }
+      yamlParseError: '',
+      yamlList: []
+    };
+  }
+
+  componentWillMount() {
+    WebSocketTest();
+    let that = this;
+    Request(
+      {
+        url: URL.getYml,
+        method: 'get'
+      },
+      function(res: any) {
+        that.setState({
+          ...that.state,
+          yamlList: res.data.detail
+        })
+      }
+    );
   }
 
 
@@ -89,11 +110,44 @@ class App extends React.PureComponent<IProps, IState> {
     }
   }
 
+  async onFileClick(event: any) {
+    const link = event.target.getAttribute('data-url');
+    let that = this;
+    Request(
+      {
+        url: URL.getDetail + '?yaml_path=' + link,
+        method: 'get'
+      },
+      function(res: any) {
+        that.setState({
+          ...that.state,
+          jsonContent: JSON.stringify(res.data.detail)
+        });
+        that.onJsonChange(that.state.jsonContent);
+      }
+    );
+  }
+
   render() {
+    const {yamlList} = this.state;
     return (
       <div className="App">
         <div className="info">
+
           <br/>
+          {
+            yamlList.map((item: object) => {
+              for (const key in item) {
+                return (
+                  <p
+                    className="yml-item"
+                    data-url={item[key]}
+                    onClick={this.onFileClick.bind(this)}
+                  >{key}</p>
+                )
+              }
+            })
+          }
           <h2>JSON和YML在线转换</h2>
           <br/>
           <p>无聊的在线小项目，源码可参考 <a href="https://github.com/wArrest/json-to-yml-frontend" target="_blank">github库</a></p>
