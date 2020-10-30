@@ -58,34 +58,36 @@ class App extends React.PureComponent<IProps, IState> {
     }
   }
 
-  async onJsonChange(newValue: any) {
-    if (newValue.length === 0) {
-      this.setState({...this.state, jsonContent: '', yamlContent: '', jsonParseError: ''})
-      return
+  handleJSON() {
+    const value = this.state.jsonContent
+    try{
+      const newJson = this.getFormatJson(value)
+      this.setState({jsonContent: newJson})
+    }catch(e) {
+      this.setState({jsonParseError: 'json格式错误'})
     }
+  }
+
+  async onJsonChange(newValue: string) {
+    this.state.jsonContent = newValue
     const result: Result = await this.getConvertedText(newValue)
-    try {
-      let json = this.getFormatJson(newValue)
-      this.setState({...this.state, jsonParseError: ''})
-      this.setState({...this.state, yamlContent: result.text, jsonContent: json})
-    } catch (e) {
-      this.setState({...this.state, jsonContent: newValue})
-      this.setState({...this.state, jsonParseError: e.toString()})
+    if(result?.text) {
+      this.setState({jsonParseError: ''})
+      this.setState({yamlContent: result.text})
+    } else {
+      this.setState({jsonParseError: result?.message??'error'})
     }
   }
 
   async onYamlChange(newValue: any) {
-    if (newValue.length === 0) {
-      this.setState({...this.state, jsonContent: '', yamlContent: ''})
-      return
-    }
+    this.state.yamlContent = newValue
     const result: Result = await this.getConvertedText(newValue)
-    try {
+    if(result?.text) {
       let json = this.getFormatJson(result.text)
-      this.setState({...this.state, jsonParseError: ''})
-      this.setState({...this.state, yamlContent: newValue, jsonContent: json})
-    } catch (e) {
-      this.setState({...this.state, yamlContent: newValue})
+      this.setState({jsonParseError: ''})
+      this.setState({jsonContent: json})
+    } else {
+      this.setState({jsonParseError: result?.message??'Error'})
     }
   }
 
@@ -132,7 +134,8 @@ class App extends React.PureComponent<IProps, IState> {
             </p>
           </div>
         </div>
-        <div className="json-editor"><h2>JSON <span>{this.state.jsonParseError}</span></h2>
+        <div className="json-editor"><h2>JSON <span>{this.state.jsonParseError}</span> <button onClick={this.handleJSON.bind(this)}>格式化</button></h2>
+         
           <AceEditor
             placeholder="输入json文本"
             mode="json"
